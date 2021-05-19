@@ -19,6 +19,9 @@
 #   1903/1909 - https://software-download.microsoft.com/download/pr/18362.1.190318-1202.19h1_release_amd64fre_InboxApps.iso
 #   2004 - https://software-download.microsoft.com/download/pr/19041.1.191206-1406.vb_release_amd64fre_InboxApps.iso
 #   20H2 - https://software-download.microsoft.com/download/pr/19041.508.200905-1327.vb_release_svc_prod1_amd64fre_InboxApps.iso
+#   21H1 - https://software-download.microsoft.com/download/sg/19041.928.210407-2138.vb_release_svc_prod1_amd64fre_InboxApps.iso
+
+# - For newer Windows 10 versions, check the following site for a link to the ISO files; https://docs.microsoft.com/en-us/azure/virtual-desktop/language-packs
 
 # - Another way to obtain an AppX/AppXBundle file for deployment via this script is from https://store.rg-adguard.net
 
