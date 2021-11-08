@@ -15,7 +15,7 @@
 #####################################
 
 # - Version 1.0
-#	Initial release version of the script, based of a custom WIM designed for deployment via MDT.
+#   Initial release version of the script, based of a custom WIM designed for deployment via MDT.
 
 # - Version 2.0: 
 #   This updated version of the script includes logic to check the Windows 10 Version and run the correct APPX/APPXBUNDLE.
@@ -24,7 +24,7 @@
 
 # - Version 3.0: 
 #   This updated version of the script includes logic to skip installation attempts on Windows 10 versions where the source app files were not readily available or compatible.
-#	Also includeded is updated notes about the script and formatting changes to the script
+#   Also includeded is updated notes about the script and formatting changes to the script
 
 #####################################
 #                Notes:             #
