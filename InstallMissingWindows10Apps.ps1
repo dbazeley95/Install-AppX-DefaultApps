@@ -1,4 +1,4 @@
-﻿#####################################
+#####################################
 #           For Windows 10          #
 #                                   #
 #   A Script to reinstall missing   #
@@ -6,11 +6,32 @@
 #                                   #
 #          By: DBazeley95           #
 #                                   #
+#            Version 3.0            #
+#                                   #
 #####################################
 
 #####################################
-#                Notes              #
+#          Version History:         #
 #####################################
+
+# - Version 1.0
+#	Initial release version of the script, based of a custom WIM designed for deployment via MDT.
+
+# - Version 2.0: 
+#   This updated version of the script includes logic to check the Windows 10 Version and run the correct APPX/APPXBUNDLE.
+#   The script relys on the APPX/APPXBUNDLE file being named in the format, e.g. 21H2-WindowsAlarms.appx
+#   After the query is run, the Windows10OSVersion variable is injected into the value for the APPXFILENAME variable.
+
+# - Version 3.0: 
+#   This updated version of the script includes logic to skip installation attempts on Windows 10 versions where the source app files were not readily available or compatible.
+#	Also includeded is updated notes about the script and formatting changes to the script
+
+#####################################
+#                Notes:             #
+#####################################
+
+# - If deploying via a Windows Startup Script (GPO), please use a WMI filter on the GPO to exclude running on devices which aren't Windows 10.
+#   Example of this filter is as follows; select * from Win32_OperatingSystem where ((Version < "10.0.22000") and (ProductType="1")) 
 
 # - AppX Files can be version specific, if deploying a missing preinstalled Windows 10 App, please download the
 #   Windows 10 Inbox Apps ISO file from Microsoft VLSC and obtain the files via this method.
@@ -27,6 +48,17 @@
 
 # - Please remember to update the source path variable, if this script is being run on a new network location
 
+#####################################
+#               Script:             #
+#####################################
+
+############################### Obtain Windows 10 OSDisplayVersion ###############################
+$Windows10OSVersion = Get-ComputerInfo | Select-Object -Expand OSDisplayVersion
+
+############################### Specific Windows 10 APPX Exclusions ###############################
+$AV1AppOSExclusion = @('2004','1909','1903')
+$WhiteboardAppOSExclusion = @('1909','1903')
+
 ############################### Define location of AppX Files ###############################
 $SourcePath = "\\SERVERNAME\SHAREPATH\"
 
@@ -40,25 +72,25 @@ if (Test-Path -Path $InstallerPath) {
 }
 
 ############################### AppX File Names ###############################
-$AlarmsAppXFileName = "Microsoft.WindowsAlarms.appxbundle"
-$AV1ExtAppXFileName = "Microsoft.AV1VideoExtension.appxbundle"
-$AppInstallerAppXFileName = "Microsoft.DesktopAppInstaller.AppxBundle"
-$HEIFExtAppXFileName = "Microsoft.HEIFImageExtension.Appx"
-$HEVCExtAppXFileName = "Microsoft.HEVCVideoExtension.appx"
-$MPEG2ExtAppXFileName = "Microsoft.MPEG2VideoExtension.appx"
-$OfficeHubAppXFileName = "Microsoft.MicrosoftOfficeHub.AppXBundle"
-$OneNoteAppXFileName = "Microsoft.Office.OneNote.appxbundle"
-$Paint3DAppXFileName = "Microsoft.MSPaint3D.AppxBundle"
-$PhotosAppXFileName = "Microsoft.Windows.Photos.AppxBundle"
-$SnipAppXFileName = "Microsoft.ScreenSketch.AppxBundle"
-$StickyNotesAppXFileName = "Microsoft.MicrosoftStickyNotes.AppxBundle"
-$StoreAppXFileName = "Microsoft.WindowsStore.AppxBundle"
-$StorePurchaseAppXFileName = "Microsoft.StorePurchaseApp.appxbundle"
-$VoiceRecorderAppXFileName = "Microsoft.WindowsSoundRecorder.AppxBundle"
-$VP9ExtAppXFileName = "Microsoft.VP9VideoExtensions.Appx"
-$WebMediaAppXFileName = "Microsoft.WebMediaExtensions.AppxBundle"
-$WebPImageAppXFileName = "Microsoft.WebpImageExtension.Appx"
-$WhiteboardAppXFileName = "Microsoft.Whiteboard.appxbundle"
+$AlarmsAppXFileName = (-join($WindowsVersion,"-Microsoft.WindowsAlarms.appxbundle"))
+$AV1ExtAppXFileName = (-join($WindowsVersion,"-Microsoft.AV1VideoExtension.appxbundle"))
+$AppInstallerAppXFileName = (-join($WindowsVersion,"-Microsoft.DesktopAppInstaller.AppxBundle"))
+$HEIFExtAppXFileName = (-join($WindowsVersion,"-Microsoft.HEIFImageExtension.Appx"))
+$HEVCExtAppXFileName = (-join($WindowsVersion,"-Microsoft.HEVCVideoExtension.appx"))
+$MPEG2ExtAppXFileName = (-join($WindowsVersion,"-Microsoft.MPEG2VideoExtension.appx"))
+$OfficeHubAppXFileName = (-join($WindowsVersion,"-Microsoft.MicrosoftOfficeHub.AppXBundle"))
+$OneNoteAppXFileName = (-join($WindowsVersion,"-Microsoft.Office.OneNote.appxbundle"))
+$Paint3DAppXFileName = (-join($WindowsVersion,"-Microsoft.MSPaint3D.AppxBundle"))
+$PhotosAppXFileName = (-join($WindowsVersion,"-Microsoft.Windows.Photos.AppxBundle"))
+$SnipAppXFileName = (-join($WindowsVersion,"-Microsoft.ScreenSketch.AppxBundle"))
+$StickyNotesAppXFileName = (-join($WindowsVersion,"-Microsoft.MicrosoftStickyNotes.AppxBundle"))
+$StoreAppXFileName = (-join($WindowsVersion,"-Microsoft.WindowsStore.AppxBundle"))
+$StorePurchaseAppXFileName = (-join($WindowsVersion,"-Microsoft.StorePurchaseApp.appxbundle"))
+$VoiceRecorderAppXFileName = (-join($WindowsVersion,"-Microsoft.WindowsSoundRecorder.AppxBundle"))
+$VP9ExtAppXFileName = (-join($WindowsVersion,"-Microsoft.VP9VideoExtensions.Appx"))
+$WebMediaAppXFileName = (-join($WindowsVersion,"-Microsoft.WebMediaExtensions.AppxBundle"))
+$WebPImageAppXFileName = (-join($WindowsVersion,"-Microsoft.WebpImageExtension.Appx"))
+$WhiteboardAppXFileName = (-join($WindowsVersion,"-Microsoft.Whiteboard.appxbundle"))
 
 ############################### AppX Package Names ###############################
 $AlarmsApp = "Microsoft.WindowsAlarms"
@@ -158,6 +190,9 @@ else {
 if ( $AV1ExtCheckInstalled -match $AV1ExtApp ) {
 	write-host "Microsoft AV1 Video Extension is already installed"
 } 
+elseif ( $Windows10OSVersion -in $AV1AppOSExclusion ) {
+	write-host "Microsoft AV1 Video Extension is not compatible with this OS Version"
+}
 else {
     xcopy $AV1ExtSharePath $InstallerPath
     DISM.EXE /Online /Add-ProvisionedAppxPackage /PackagePath:$AV1ExtLocalPath /SkipLicense
@@ -328,6 +363,9 @@ else {
 if ( $WhiteboardCheckInstalled -match $WhiteboardApp ) {
 	write-host "Microsoft Whiteboard is already installed"
 } 
+elseif ( $Windows10OSVersion -in $WhiteboardAppOSExclusion ) {
+	write-host "Microsoft Whiteboard is not compatible with this OS Version"
+}
 else {
     xcopy $WhiteboardSharePath $InstallerPath
     DISM.EXE /Online /Add-ProvisionedAppxPackage /PackagePath:$WhiteboardLocalPath /SkipLicense
