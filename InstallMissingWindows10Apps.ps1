@@ -6,7 +6,7 @@
 #                                   #
 #          By: DBazeley95           #
 #                                   #
-#            Version 3.0            #
+#            Version 4.0            #
 #                                   #
 #####################################
 
@@ -19,12 +19,15 @@
 
 # - Version 2.0: 
 #   This updated version of the script includes logic to check the Windows 10 Version and run the correct APPX/APPXBUNDLE.
-#   The script relys on the APPX/APPXBUNDLE file being named in the format, e.g. 21H2-WindowsAlarms.appx
-#   After the query is run, the Windows10OSVersion variable is injected into the value for the APPXFILENAME variable.
+#   The script relys on the APPX/APPXBUNDLE file being named in the format, e.g. 19044-WindowsAlarms.appx
+#   After the query is run, the WindowsVersion variable is injected into the value for the APPXFILENAME variable.
 
 # - Version 3.0: 
 #   This updated version of the script includes logic to skip installation attempts on Windows 10 versions where the source app files were not readily available or compatible.
 #   Also includeded is updated notes about the script and formatting changes to the script
+
+# - Version 4.0: 
+#   Updated to include a link to the Inbox Apps ISO for Windows 10 21H2
 
 #####################################
 #                Notes:             #
@@ -40,7 +43,7 @@
 #   1903/1909 - https://software-download.microsoft.com/download/pr/18362.1.190318-1202.19h1_release_amd64fre_InboxApps.iso
 #   2004 - https://software-download.microsoft.com/download/pr/19041.1.191206-1406.vb_release_amd64fre_InboxApps.iso
 #   20H2 - https://software-download.microsoft.com/download/pr/19041.508.200905-1327.vb_release_svc_prod1_amd64fre_InboxApps.iso
-#   21H1 - https://software-download.microsoft.com/download/sg/19041.928.210407-2138.vb_release_svc_prod1_amd64fre_InboxApps.iso
+#   21H1/21H2 - https://software-download.microsoft.com/download/sg/19041.928.210407-2138.vb_release_svc_prod1_amd64fre_InboxApps.iso
 
 # - For newer Windows 10 versions, check the following site for a link to the ISO files; https://docs.microsoft.com/en-us/azure/virtual-desktop/language-packs
 
@@ -48,19 +51,27 @@
 
 # - Please remember to update the source path variable, if this script is being run on a new network location
 
+# - Build Version Numbers:
+#   21H2 - 19044
+#   21H1 - 19043
+#   20H2 - 19042
+#   2004 - 19041
+#   1909 - 18363
+#   1903 - 18362
+
 #####################################
 #               Script:             #
 #####################################
 
-############################### Obtain Windows 10 OSDisplayVersion ###############################
-$Windows10OSVersion = Get-ComputerInfo | Select-Object -Expand OSDisplayVersion
+############################### Obtain Windows 10 OSBuildNumber ###############################
+$WindowsVersion = Get-ComputerInfo | Select-Object -Expand OsBuildNumber
 
 ############################### Specific Windows 10 APPX Exclusions ###############################
-$AV1AppOSExclusion = @('2004','1909','1903')
-$WhiteboardAppOSExclusion = @('1909','1903')
+$AV1AppOSExclusion = @('19041','18363','18362')
+$WhiteboardAppOSExclusion = @('18363','18362')
 
 ############################### Define location of AppX Files ###############################
-$SourcePath = "\\SERVERNAME\SHAREPATH\"
+$SourcePath = "\\Server\NetworkShare\"
 
 ############################### Create Directory to copy AppX Files to ###############################
 $InstallerPath = "C:\ProgramData\StoreApps"
@@ -73,7 +84,7 @@ if (Test-Path -Path $InstallerPath) {
 
 ############################### AppX File Names ###############################
 $AlarmsAppXFileName = (-join($WindowsVersion,"-Microsoft.WindowsAlarms.appxbundle"))
-$AV1ExtAppXFileName = (-join($WindowsVersion,"-Microsoft.AV1VideoExtension.appxbundle"))
+$AV1ExtAppXFileName = (-join($WindowsVersion,"-Microsoft.AV1VideoExtension.appx"))
 $AppInstallerAppXFileName = (-join($WindowsVersion,"-Microsoft.DesktopAppInstaller.AppxBundle"))
 $HEIFExtAppXFileName = (-join($WindowsVersion,"-Microsoft.HEIFImageExtension.Appx"))
 $HEVCExtAppXFileName = (-join($WindowsVersion,"-Microsoft.HEVCVideoExtension.appx"))
